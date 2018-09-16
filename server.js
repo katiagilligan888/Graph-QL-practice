@@ -3,7 +3,10 @@ const expressGraphQL = require('express-graphql');
 const schema = require('./schema/schema'); 
 
 const server = express(); 
+
+
 server.use('/graphql', expressGraphQL({
+    schema, 
     graphiql: true //only used in development environment for graphiQL
 }))
 
