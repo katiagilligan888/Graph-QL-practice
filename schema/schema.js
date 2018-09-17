@@ -11,13 +11,30 @@ const {
     GraphQLSchema
 } = graphql;
 
+const CompanyType = new GraphQLObjectType({
+    name:'Company', 
+    fields: {
+        id: { type: GraphQLString }, 
+        name: { type: GraphQLString }, 
+        description: { type: GraphQLString }
+    }
+})
+
 
 const UserType = new GraphQLObjectType({
     name: 'User', 
     fields: { // all the properties that a user has and what type of data type
         id: { type: GraphQLString } ,
-        firstName: { type: GraphQLString} , 
-        age: {type: GraphQLInt}
+        firstName: { type: GraphQLString } , 
+        age: { type: GraphQLInt }, 
+        company: {
+            type: CompanyType, 
+            resolve(parentValue, args){
+                return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`).then(
+                    res => res.data
+                )
+            }
+        }
     }
 }); 
 
