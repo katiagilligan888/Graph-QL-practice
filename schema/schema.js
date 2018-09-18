@@ -8,34 +8,42 @@ const {
     GraphQLObjectType, 
     GraphQLString, 
     GraphQLInt, 
-    GraphQLSchema
+    GraphQLSchema, 
+    GraphQLList
 } = graphql;
 
 const CompanyType = new GraphQLObjectType({
     name:'Company', 
-    fields: {
+    fields: () => ({ //arrow function will only execute after entire file has been executed, which at that point UserType will be defined.
         id: { type: GraphQLString }, 
         name: { type: GraphQLString }, 
-        description: { type: GraphQLString }
-    }
+        description: { type: GraphQLString }, 
+        users: {
+            type: GraphQLList(UserType), 
+            resolve(parentValue, args){
+                return axios.get(`http://localhost:3000/companies/${parentValue.id}/users`)
+                .then(res => res.data)
+            }
+        }
+    })
 })
 
 
 const UserType = new GraphQLObjectType({
     name: 'User', 
-    fields: { // all the properties that a user has and what type of data type
+    fields:() => ({ // all the properties that a user has and what type of data type
         id: { type: GraphQLString } ,
         firstName: { type: GraphQLString } , 
         age: { type: GraphQLInt }, 
         company: {
             type: CompanyType, 
             resolve(parentValue, args){
-                return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`).then(
+                return axios.get(`http://localhost:3000/companies/${parentValue .companyId}`).then(
                     res => res.data
                 )
             }
         }
-    }
+    })
 }); 
 
 //ROOT Query: entry point into the application and data
@@ -48,6 +56,14 @@ const RootQuery = new GraphQLObjectType({
             args: { id: { type: GraphQLString }}, 
             resolve(parentValue, args){
                 return axios.get(`http://localhost:3000/users/${args.id}`)
+                .then(resp => resp.data)
+            }
+        }, 
+        company: {
+            type: CompanyType, 
+            args: { id: { type: GraphQLString }}, 
+            resolve(parentValue, args){
+                return axios.get(`http://localhost:3000/companies/${args.id}`)
                 .then(resp => resp.data)
             }
         }
